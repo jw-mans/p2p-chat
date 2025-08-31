@@ -1,3 +1,9 @@
-# Python
+# env
 venv/
 .env
+
+# GUI
+client/gui/
+
+# account
+client/account/account.json

@@ -1,70 +1,52 @@
 import asyncio
-import httpx
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-DISCOVERY_URL = os.getenv("DISCOVERY_URL")
-
-async def register(username: str, host: str, port: int):
-    async with httpx.AsyncClient() as client:
-        peer_data = {"username": username, "host": host, "port": port}
-        response = await client.post(f"{DISCOVERY_URL}/register/", json=peer_data)
-        print("Response:", response.status_code, response.json() if response.status_code == 200 else response.text)
-
-async def available_peers():
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{DISCOVERY_URL}/available")
-        if response.status_code == 200:
-            peers = response.json()
-            print("Available peers:", peers)
-            return peers
-        return []
-
-async def handle_client(reader, writer):
-    data = await reader.read(1000)
-    print(f"\nMessage received: {data.decode()}")
-
-async def tcp_server(host: str, port: int):
-    server = await asyncio.start_server(handle_client, host, port)
-    async with server:
-        print(f"Listening on {host}:{port}...")
-        await server.serve_forever()
-
-async def send_message(peer_host: str, peer_port: int, msg: str):
-    reader, writer = await asyncio.open_connection(peer_host, peer_port)
-    writer.write(msg.encode())
-    await writer.drain()
-    print(f"Sent \"{msg}\"")
-    writer.close()
-    await writer.wait_closed()
+import logging as log
+from peer_requests.register import register
+from peer_requests.available_peers import available_peers
+from peer_requests.send import send
+from tcp.server import tcp_server
+from account.account import Account
 
 async def main():
-    username = input("Enter your username: ")
-    host = "0.0.0.0"
-    port = int(input("Enter your port: "))
+    acc = Account.load()
+    if not acc:
+        username = input("Enter your username: ")
+        host = "127.0.0.1"  # local test
+        port = int(input("Enter your port: "))
+
+        from models.peer import Peer
+        peer = Peer(username, host, port)
+        acc = Account(peer)
+        log.info("Account created")
+    else:
+        log.info(f"Loaded account: {acc.username} ({acc.host}:{acc.port})")
+
+    # TCP-server task
+    server_task = asyncio.create_task(tcp_server(host, port))
+    # pause to reach start
+    await asyncio.sleep(0.1)
 
     await register(username, host, port)
 
-    asyncio.create_task(tcp_server(host, port))
-
     while True:
         cmd = input("\nCommand (list/send/quit): ").lower().strip()
+        log.debug(f"\"{cmd}\" command choosen")
         if cmd == "list":
             await available_peers()
         elif cmd == "send":
             peers = await available_peers()
             if not peers:
+                log.info("Peers not found.")
                 continue
             target = input("Enter target username: ")
             peer = next((p for p in peers if p["username"] == target), None)
             if peer:
                 msg = input("Enter message: ")
-                await send_message(peer["host"], peer["port"], f"{username}: {msg}")
+                await send(peer["host"], peer["port"], f"{username}: {msg}")
             else:
-                print("Peer not found")
+                log.info("Peer not found")
         elif cmd == "quit":
-            print("Exiting...")
+            log.info("Exiting...")
+            server_task.cancel()
             break
 
 if __name__ == "__main__":
