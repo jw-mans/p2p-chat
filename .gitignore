@@ -2,8 +2,10 @@
 venv/
 .env
 
-# GUI
-client/gui/
-
 # account
 client/account/account.json
+
+# pycache
+__pycache__/
+**/__pycache__/
+*.pyc

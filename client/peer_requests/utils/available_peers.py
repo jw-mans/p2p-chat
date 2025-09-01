@@ -1,4 +1,4 @@
-from core.config import DISCOVERY_URL
+from ...core.config import DISCOVERY_URL
 import httpx
 import logging as log
 
@@ -10,7 +10,7 @@ async def available_peers():
             if response.status_code == 200:
                 peers = response.json()
                 log.info("Success in GET[/available]")
-                print("Available peers:", str('\n'.join([peer_.username for peer_ in peers])))
+                log.info("Available peers:\n" + '\n'.join([peer_["username"] for peer_ in peers]))
                 return peers
             
             else:

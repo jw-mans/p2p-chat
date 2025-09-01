@@ -1,8 +1,8 @@
 import asyncio
 import logging as log
-from peer_requests.register import register
-from peer_requests.available_peers import available_peers
-from peer_requests.send import send
+from client.peer_requests import (
+    available_peers, register, send
+)
 from tcp.server import tcp_server
 from account.account import Account
 
