@@ -1,9 +1,28 @@
-from ...core.config import DISCOVERY_URL
+from ...config import DISCOVERY_URL
 from ...models.peer import Peer
+from ...core.logging import log
 import httpx
-import logging as log
 
-log.basicConfig(level=log.INFO)
+async def available():
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(f"{DISCOVERY_URL}/available")
+
+            if response.status_code == 200:
+                peers = response.json()
+                log.info("Success in GET[/available]")
+                log.info("Available peers:\n" + '\n'.join([peer_["username"] for peer_ in peers]))
+                return peers
+            
+            else:
+                log.warning("Failed in GET[/available]")
+                log.debug(f"Status {response.status_code}: {response.text}")
+                return []
+            
+        except httpx.RequestError as re:
+            log.error("Failed in GET[/available]")
+            log.debug(f"{re}")
+            return []
 
 async def register(username_or_peer, host=None, port=None):
     username = None

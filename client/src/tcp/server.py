@@ -1,5 +1,5 @@
 import asyncio
-import logging as log
+from ..core.logging import log
 
 log.basicConfig(level=log.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 

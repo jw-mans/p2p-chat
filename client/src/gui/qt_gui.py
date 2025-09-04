@@ -8,23 +8,21 @@ from qasync import QEventLoop
 
 import sys
 import asyncio
-import logging as log
 
-from ..models.peer import Peer
 from ..account.account import Account
-from ..peer_requests import available_peers, register, send
-
-log.basicConfig(level=log.INFO)
+from ..network import available, register, send
+from ..core.logging import log
 
 class ClientGUI(QWidget):
     async def available_peers_(self):
-        self.peers = await available_peers() or []
+        self.peers = await available() or []
         self.peer_list.clear()
         for p_ in self.peers:
             if p_["username"] != self.acc.username:
                 self.peer_list.addItem(
                     f'{p_["username"]} ({p_["host"]}:{p_["port"]})'
                     )
+                
     # some tasks
 
     async def register_(self):
@@ -47,7 +45,7 @@ class ClientGUI(QWidget):
         await send(peer["host"], peer["port"], f"{self.acc.username}: {msg}")
         self.chat_area.append(f"You -> {username}: {msg}")
         self.msg_input.clear()
-    
+
     # GUI create
     def __init__(self, account: Account):
         super().__init__()
@@ -93,21 +91,23 @@ class ClientGUI(QWidget):
         layout.addWidget(self.chat_area)
         
         self.setLayout(layout)
+"""
+The error was in: 
 
 if __name__ == "__main__":
-    acc = Account.auth()
-    app = QApplication(sys.argv)
 
-    loop = QEventLoop(app)
-    asyncio.set_event_loop(loop)
-
-    gui = ClientGUI(acc)
-    gui.show()
-
-    async def startup_tasks():
+    async def build_gui():
+        acc = await Account.auth()
+        gui = ClientGUI(acc)
+        gui.show()
         await gui.register_()
         await gui.available_peers_()
 
+    app = QApplication(sys.argv)
+
+    loop = QEventLoop(app)
+   
     with loop:
-        loop.create_task(startup_tasks())
+        loop.create_task(build_gui())
         loop.run_forever()
+"""

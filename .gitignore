@@ -9,3 +9,7 @@ client/account/account.json
 __pycache__/
 **/__pycache__/
 *.pyc
+
+# widgets
+
+client/src/gui/widgets/push_button.py

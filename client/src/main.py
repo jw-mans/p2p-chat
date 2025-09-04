@@ -1,8 +1,6 @@
 import asyncio
 import logging as log
-from client.peer_requests import (
-    available_peers, register, send
-)
+from network import available, register, send
 from tcp.server import tcp_server
 from account.account import Account
 
@@ -31,9 +29,9 @@ async def main():
         cmd = input("\nCommand (list/send/quit): ").lower().strip()
         log.debug(f"\"{cmd}\" command choosen")
         if cmd == "list":
-            await available_peers()
+            await available()
         elif cmd == "send":
-            peers = await available_peers()
+            peers = await available()
             if not peers:
                 log.info("Peers not found.")
                 continue

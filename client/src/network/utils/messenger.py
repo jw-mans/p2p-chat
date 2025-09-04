@@ -1,7 +1,5 @@
 import asyncio
-import logging as log
-
-log.basicConfig(level=log.INFO)
+from ...core.logging import log
 
 async def send(peer_host: str, peer_port: int, msg: str):
     try:

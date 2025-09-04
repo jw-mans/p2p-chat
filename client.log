@@ -1,0 +1,16 @@
+2025-09-04 23:28:25,482 [INFO] client: Account 'testuser1' created
+2025-09-04 23:28:25,483 [INFO] client: Created new account: testuser1 (127.0.0.1:4001)
+2025-09-04 23:37:59,881 [ERROR] qasync._QEventLoop: Task exception was never retrieved
+future: <Task finished name='Task-1' coro=<build_gui() done, defined at C:\Users\keren\vscrepos\p2p-chat\client\src\gui\qt_gui.py:97> exception=RuntimeError('no running event loop')>
+Traceback (most recent call last):
+  File "C:\Users\keren\vscrepos\p2p-chat\client\src\gui\qt_gui.py", line 98, in build_gui
+    acc = await Account.auth()
+  File "C:\Users\keren\vscrepos\p2p-chat\client\src\account\account.py", line 74, in auth
+    selected_account = loop.run_until_complete(wait_selection())
+  File "C:\Users\keren\vscrepos\p2p-chat\venv\lib\site-packages\qasync\__init__.py", line 438, in run_until_complete
+    return future.result()
+  File "C:\Users\keren\vscrepos\p2p-chat\client\src\account\account.py", line 70, in wait_selection
+    await asyncio.sleep(0.1)
+  File "C:\Users\keren\AppData\Local\Programs\Python\Python310\lib\asyncio\tasks.py", line 599, in sleep
+    loop = events.get_running_loop()
+RuntimeError: no running event loop
