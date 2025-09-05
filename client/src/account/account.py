@@ -4,7 +4,6 @@ from ..core.logging import log
 from ..models.peer import Peer
 from ..config import ACCOUNT_FILE
 from PySide6.QtWidgets import QApplication
-from qasync import QEventLoop
 import asyncio
 
 class Account(Peer):
@@ -48,29 +47,25 @@ class Account(Peer):
 
     @classmethod
     async def auth(cls):
-
-        #app_created = False
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-            #app_created = True
 
-        loop = QEventLoop(app)
-        asyncio.set_event_loop(loop)
-
-        from ..gui.widgets.account_selector import AccountSelector # to avoid the circular import
+        from ..gui.widgets.account_selector import AccountSelector
 
         selector = AccountSelector()
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+
+        def finish():
+            if selector._selected_ is not None and not future.done():
+                future.set_result(selector._selected_)
+
+        selector.select_btn.clicked.connect(finish)
+        selector.create_btn.clicked.connect(finish)
+
         selector.show()
+        selected_acc = await future
+        selector.close()
+        return selected_acc
 
-        # wait while user does not select or create account
-
-        async def wait_selection():
-            while selector._selected_ is None:
-                await asyncio.sleep(0.1)
-            return selector._selected_
-
-        with loop:
-            selected_account = loop.run_until_complete(wait_selection())
-
-        return selected_account

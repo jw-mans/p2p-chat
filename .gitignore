@@ -3,13 +3,13 @@ venv/
 .env
 
 # account
-client/account/account.json
+client/src/account/account.json
+
+# logging
+client.log
 
 # pycache
 __pycache__/
 **/__pycache__/
 *.pyc
 
-# widgets
-
-client/src/gui/widgets/push_button.py

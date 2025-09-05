@@ -1,9 +1,6 @@
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout,
-    QLabel, QPushButton, QListWidget, 
-    QLineEdit, QTextEdit
+    QApplication, QWidget, QVBoxLayout
 )
-from PySide6.QtCore import QTimer
 from qasync import QEventLoop
 
 import sys
@@ -12,9 +9,14 @@ import asyncio
 from ..account.account import Account
 from ..network import available, register, send
 from ..core.logging import log
+from .widgets.app_widgets import (
+    ChatAsyncButton, ChatAsyncTextEdit,
+    ChatAsyncListWidget, ChatAsyncLabel,
+    ChatAsyncLineEdit
+)
 
 class ClientGUI(QWidget):
-    async def available_peers_(self):
+    async def available_(self):
         self.peers = await available() or []
         self.peer_list.clear()
         for p_ in self.peers:
@@ -59,40 +61,34 @@ class ClientGUI(QWidget):
         layout = QVBoxLayout()
 
         # acc info
-        self.account_label = QLabel(f"Username: {self.acc.username} | {self.acc.host}:{self.acc.port}")
+        self.account_label = ChatAsyncLabel(f"Username: {self.acc.username} | {self.acc.host}:{self.acc.port}")
         layout.addWidget(self.account_label)
         
         # refresh peers button
-        self.refresh_btn = QPushButton("Refresh peers")
-        self.refresh_btn.clicked.connect(
-            lambda: asyncio.create_task(self.available_peers_())
-        )
-        layout.addWidget(self.refresh_btn)
+        self.refresh_btn = ChatAsyncButton("Refresh peers", 
+            lambda: asyncio.create_task(self.available_()), 
+            layout=layout)
 
         # peer list
-        self.peer_list = QListWidget()
+        self.peer_list = ChatAsyncListWidget()
         layout.addWidget(self.peer_list)
 
         # message input
-        self.msg_input = QLineEdit()
+        self.msg_input = ChatAsyncLineEdit()
         self.msg_input.setPlaceholderText("Type your message here...")
         layout.addWidget(self.msg_input)
 
         # send button
-        self.send_btn = QPushButton("Send message")
-        self.send_btn.clicked.connect(
-            lambda: asyncio.create_task(self.send_())
-        )
-        layout.addWidget(self.send_btn)
+        self.send_btn = ChatAsyncButton("Send message", 
+            lambda: asyncio.create_task(self.send_()), 
+            layout=layout)
 
         # chat area
-        self.chat_area = QTextEdit()
+        self.chat_area = ChatAsyncTextEdit()
         self.chat_area.setReadOnly(True)
         layout.addWidget(self.chat_area)
         
         self.setLayout(layout)
-"""
-The error was in: 
 
 if __name__ == "__main__":
 
@@ -101,13 +97,13 @@ if __name__ == "__main__":
         gui = ClientGUI(acc)
         gui.show()
         await gui.register_()
-        await gui.available_peers_()
+        await gui.available_()
 
     app = QApplication(sys.argv)
 
     loop = QEventLoop(app)
+    asyncio.set_event_loop(loop)
    
     with loop:
         loop.create_task(build_gui())
         loop.run_forever()
-"""
