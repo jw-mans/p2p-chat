@@ -1,4 +1,8 @@
-from .utils.discovery import available, register
-from .utils.messenger import send
+from .discovery import available, register
+from .messenger.sender import Sender
+from .messenger.receiver import Receiver
 
-__all__ = ["available", "register", "send"]
+
+__all__ = ["available", "register", 
+           "Sender", "Receiver"
+           ]

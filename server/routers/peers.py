@@ -2,6 +2,8 @@ import requests
 import logging as log
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
+
 from models.peer import Peer, PeerDB
 from models.message import Message
 from database.database import SessionLocal
@@ -34,7 +36,7 @@ def register(peer: Peer, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
 
 
-@router.get("/available")
+@router.get("/available/", response_model=List[Peer])
 def available_peers(db: Session = Depends(get_db)):
     peers = db.query(PeerDB).all()
     log.info(f"Available peers requested. Found: {len(peers)}")
